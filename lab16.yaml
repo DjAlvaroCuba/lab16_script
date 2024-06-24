@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for creating a VPC, EC2 instance (Ubuntu), S3 bucket, and associated security group within AWS Free Tier limits.
+
+Resources:
+  VPCSEM16:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  MySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPCSEM16
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+
+  MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPCSEM16
+      InternetGatewayId: !Ref MyInternetGateway
+
+  MyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPCSEM16
+
+  MyRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref MyRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGateway
+
+  MySubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref MySubnet
+      RouteTableId: !Ref MyRouteTable
+
+  EC2SEM16:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0d00fdd4689a5d575  # Ubuntu 20.04 LTS AMI ID (free tier eligible)
+      SubnetId: !Ref MySubnet
+      SecurityGroupIds:
+        - !Ref EC2SEM16SecurityGroup
+
+  EC2SEM16SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and S3 access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Allow SSH access from anywhere
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0  # Allow all outbound TCP traffic
+        - IpProtocol: udp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0  # Allow all outbound UDP traffic
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0  # Allow all outbound ICMP traffic
+
+  S3SEM16:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: sem16-bucket
+
+Outputs:
+  VPCId:
+    Description: VPC ID
+    Value: !Ref VPCSEM16
+
+  SubnetId:
+    Description: Subnet ID
+    Value: !Ref MySubnet
+
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref EC2SEM16
+
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref EC2SEM16SecurityGroup
+
+  S3BucketName:
+    Description: S3 Bucket Name
+    Value: !Ref S3SEM16
