@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Template for creating a VPC, EC2 instance (Ubuntu), S3 bucket, and associated security group within AWS Free Tier limits.
+Description: Template for creating a VPC, EC2 instance (Ubuntu), S3 bucket, and
+  associated security group within AWS Free Tier limits.
 
 Resources:
   VPCSEM16:
@@ -50,7 +51,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0d00fdd4689a5d575  # Ubuntu 20.04 LTS AMI ID (free tier eligible)
+      ImageId: ami-0d00fdd4689a5d575 # Ubuntu 20.04 LTS AMI ID (free tier eligible)
       SubnetId: !Ref MySubnet
       SecurityGroupIds:
         - !Ref EC2SEM16SecurityGroup
@@ -58,25 +59,26 @@ Resources:
   EC2SEM16SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
+      VpcId: !Ref VPCSEM16 # Asociar el grupo de seguridad a la VPC
       GroupDescription: Enable SSH and S3 access
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0  # Allow SSH access from anywhere
+          CidrIp: 0.0.0.0/0 # Permitir acceso SSH desde cualquier lugar
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 0
           ToPort: 65535
-          CidrIp: 0.0.0.0/0  # Allow all outbound TCP traffic
+          CidrIp: 0.0.0.0/0 # Permitir todo el tráfico TCP saliente
         - IpProtocol: udp
           FromPort: 0
           ToPort: 65535
-          CidrIp: 0.0.0.0/0  # Allow all outbound UDP traffic
+          CidrIp: 0.0.0.0/0 # Permitir todo el tráfico UDP saliente
         - IpProtocol: icmp
           FromPort: -1
           ToPort: -1
-          CidrIp: 0.0.0.0/0  # Allow all outbound ICMP traffic
+          CidrIp: 0.0.0.0/0 # Permitir todo el tráfico ICMP saliente
 
   S3SEM16:
     Type: AWS::S3::Bucket
