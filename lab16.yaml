@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Template for creating a VPC, EC2 instance (Ubuntu), S3 bucket, and
-  associated security group within AWS Free Tier limits.
+Description: Grupolab16_Cuba_Ferrer
 
 Resources:
   VPCSEM16:
@@ -51,7 +50,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0d00fdd4689a5d575 # Ubuntu 20.04 LTS AMI ID (free tier eligible)
+      ImageId: ami-0d00fdd4689a5d575 
       SubnetId: !Ref MySubnet
       SecurityGroupIds:
         - !Ref EC2SEM16SecurityGroup
